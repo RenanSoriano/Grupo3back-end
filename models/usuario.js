@@ -60,3 +60,4 @@ userSchema.method({
 });
 
 module.exports = mongoose.model('usuario', usuarioSchema);
+//
