@@ -9,6 +9,7 @@ const Authroute = require("./routes/authRoute")
 const tarefa = require('./models/tarefa');
 const usuario = require('./models/usuario');
 const Tarefa = require('./models/tarefa');
+const { isSignedIn } = require('./models/authController');
 
 const app = express(); 
 
@@ -35,26 +36,30 @@ mongoose.connect(connectionString, { useNewUrlParser: true, useUnifiedTopology: 
 
 
 //Rotas
-app.get('/tarefas', async (req, res) => {
-    const tarefas = await tarefa.find();
-    res.json(tarefas);
+app.get('/tarefas', isSignedIn, async (req, res) => {
+    try {
+        const tarefas = await Tarefa.find();
+        res.json(tarefas);
+    } catch (error) {
+        res.status(500).json({ message: 'Error retrieving tarefas', error });
+    }
 });
 
-app.post('/tarefas/new', async (req, res) => {
+app.post('/tarefas/new',isSignedIn, async (req, res) => {
     const { name, description, dueDate } = req.body;
     const newTarefa = new tarefa({ name, description, dueDate });
     await newTarefa.save();
     res.json(newTarefa);
 });
 
-app.delete('/tarefas/delete/:id', async (req, res) => {
+app.delete('/tarefas/delete/:id',isSignedIn, async (req, res) => {
     const { id } = req.params;
     await tarefa.findByIdAndDelete(id);
     res.json({ message: 'Tarefa deleted' });
 });
 
 // Retrieve a single task by ID
-app.get('/tarefas/:id', async (req, res) => {
+app.get('/tarefas/:id',isSignedIn, async (req, res) => {
     const { id } = req.params;
     const tarefa = await Tarefa.findById(id);
     if (!tarefa) {
@@ -64,7 +69,7 @@ app.get('/tarefas/:id', async (req, res) => {
 });
 
 // Update an existing task by ID
-app.put('/tarefas/update/:id', async (req, res) => {
+app.put('/tarefas/update/:id',isSignedIn, async (req, res) => {
     const { id } = req.params;
     const { name, description, dueDate } = req.body;
     const updatedTarefa = await Tarefa.findByIdAndUpdate(id, { name, description, dueDate }, { new: true });
@@ -72,4 +77,69 @@ app.put('/tarefas/update/:id', async (req, res) => {
         return res.status(404).json({ message: 'Tarefa not found' });
     }
     res.json(updatedTarefa);
+});
+
+// Mark a task as done
+app.put('/tarefas/:id/done', isSignedIn, async (req, res) => {
+    const { id } = req.params;
+    try {
+        const updatedTarefa = await Tarefa.findByIdAndUpdate(id, { completed: true }, { new: true });
+        if (!updatedTarefa) {
+            return res.status(404).json({ message: 'Tarefa not found' });
+        }
+        res.json(updatedTarefa);
+    } catch (error) {
+        res.status(500).json({ message: 'Error marking tarefa as done', error });
+    }
+});
+
+// Update user information
+app.put('/usuario/update', isSignedIn, async (req, res) => {
+    const { email, cpf, password } = req.body;
+    const userId = req.user._id; // Assuming user ID is stored in req.user
+
+    const updateData = {};
+    if (email) updateData.email = email;
+    if (cpf) updateData.cpf = cpf;
+    if (password) updateData.password = password;
+
+    try {
+        const updatedUsuario = await usuario.findByIdAndUpdate(userId, updateData, { new: true });
+        if (!updatedUsuario) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.json(updatedUsuario);
+    } catch (error) {
+        res.status(500).json({ message: 'Error updating user information', error });
+    }
+});
+
+// Delete user account
+app.delete('/usuario/delete', isSignedIn, async (req, res) => {
+    const userId = req.user._id; // Assuming user ID is stored in req.user
+
+    try {
+        const deletedUsuario = await usuario.findByIdAndDelete(userId);
+        if (!deletedUsuario) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.json({ message: 'User account deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error deleting user account', error });
+    }
+});
+
+// Retrieve user information
+app.get('/usuario', isSignedIn, async (req, res) => {
+    const userId = req.user._id; // Assuming user ID is stored in req.user
+
+    try {
+        const user = await usuario.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.json(user);
+    } catch (error) {
+        res.status(500).json({ message: 'Error retrieving user information', error });
+    }
 });
