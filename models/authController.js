@@ -21,6 +21,7 @@ usuario.save()
             id: usuario._id,
             name: usuario.name,
             email: usuario.email,
+            cpf: usuario.cpf,
         });
     })
     .catch(err => {
@@ -32,7 +33,7 @@ usuario.save()
     });
 };
 
-// SIGNIN: Authenticating existing usuario
+// SIGNIN: Autenticar  usuario
 exports.signin = async (req, res) => {
     // Validate usuario input using express-validator
     const errors = validationResult(req);
@@ -43,8 +44,8 @@ exports.signin = async (req, res) => {
     }
 
     // Checking usuario credentials and generating JWT token for authentication
-    const { email, password } = req.body;
-    await usuario.findOne({ email: `${email}` })
+    const { emailOrCpf, password } = req.body;
+    await usuario.findOne({ $or: [{ email: emailOrCpf }, { cpf: emailOrCpf }] })
         .then(usuario => {
             if (!usuario) {
                 return res.status(400).json({
@@ -56,11 +57,11 @@ exports.signin = async (req, res) => {
                     error: "Email or Password does not exist"
                 });
             }
-            // Setting JWT token as a cookie in the browser
+            // Setting JWT token as a cookie in the browser (cpf aqui)
             const token = jwtToken.sign({ _id: usuario._id }, 'shhhhh');
             res.cookie("token", token, { expire: new Date() + 9999 });
-            const { _id, name, email } = usuario;
-            return res.json({ token, usuario: { _id, name, email } });
+            const { _id, name, email, cpf } = usuario;
+            return res.json({ token, usuario: { _id, name, email, cpf } });
         });
 };
 
