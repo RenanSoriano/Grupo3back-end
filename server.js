@@ -4,11 +4,24 @@ const mongoose = require('mongoose');
 require('dotenv').config();
 var crypto = require("crypto");
 const {v4: uuidv4} =  require('uuid')
+const cookieParser = require('cookie-parser');
+const Authroute = require("./routes/authRoute")
+const tarefa = require('./models/tarefa');
+const usuario = require('./models/usuario');
+const Tarefa = require('./models/tarefa');
+
 const app = express(); 
 
-// a
+
 app.use(express.json()); 
 app.use(cors());
+// Cookie-parser for handling cookies
+app.use(cookieParser());
+// CORS for enabling Cross-Origin Resource Sharing
+app.use(cors());
+// Routing
+// Mounting authentication-related routes under the '/api' endpoint
+app.use("/api", Authroute);
 
 const port = 4001;
 
@@ -19,7 +32,7 @@ mongoose.connect(connectionString, { useNewUrlParser: true, useUnifiedTopology: 
         .then(() => console.log('Connected to the database…')) 
         .catch((err) => console.error('Connection error:', err));
 
-const tarefa = require('./models/tarefa');
+
 
 //Rotas
 app.get('/tarefas', async (req, res) => {
@@ -40,5 +53,23 @@ app.delete('/tarefas/delete/:id', async (req, res) => {
     res.json({ message: 'Tarefa deleted' });
 });
 
+// Retrieve a single task by ID
+app.get('/tarefas/:id', async (req, res) => {
+    const { id } = req.params;
+    const tarefa = await Tarefa.findById(id);
+    if (!tarefa) {
+        return res.status(404).json({ message: 'Tarefa not found' });
+    }
+    res.json(tarefa);
+});
 
-    
+// Update an existing task by ID
+app.put('/tarefas/update/:id', async (req, res) => {
+    const { id } = req.params;
+    const { name, description, dueDate } = req.body;
+    const updatedTarefa = await Tarefa.findByIdAndUpdate(id, { name, description, dueDate }, { new: true });
+    if (!updatedTarefa) {
+        return res.status(404).json({ message: 'Tarefa not found' });
+    }
+    res.json(updatedTarefa);
+});

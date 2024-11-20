@@ -1,7 +1,7 @@
 const mongoose = require('mongoose'); 
 
 
-const tarefaSchema = new mongoose.Schema({ 
+const TarefaSchema = new mongoose.Schema({ 
 name: String,
 description: String,
 dueDate: Date,
@@ -9,5 +9,5 @@ dueDate: Date,
  }); 
 
 
-module.exports = mongoose.model('tarefa', tarefaSchema);
+module.exports = mongoose.model('tarefa', TarefaSchema);
 //

@@ -1,7 +1,6 @@
 const mongoose = require('mongoose'); 
-const mongoose = require('mongoose')
 var crypto = require("crypto");
-const {v4: uuidv4} =  require('uuid')
+const {v4: uuidv4} =  require('uuid');
 
 const usuarioSchema = new mongoose.Schema(
     {
@@ -38,7 +37,7 @@ usuarioSchema.virtual("password")
     return this._password
 })
 
-userSchema.method({
+usuarioSchema.method({
   
     //checar se senha correta 
       authenticate: function(plainpassword){
