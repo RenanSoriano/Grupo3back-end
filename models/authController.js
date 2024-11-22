@@ -32,24 +32,28 @@ exports.signin = async (req, res) => {
 
     // Checking usuario credentials and generating JWT token for authentication
     const { emailOrCpf, password } = req.body;
-    await usuario.findOne({ $or: [{ email: emailOrCpf }, { cpf: emailOrCpf }] })
-        .then(usuario => {
-            if (!usuario) {
-                return res.status(400).json({
-                    error: "usuario not found"
-                });
-            }
-            if (!usuario.authenticate(password)) {
-                return res.status(401).json({
-                    error: "Email or Password does not exist"
-                });
-            }
-            // Setting JWT token as a cookie in the browser (cpf aqui)
-            const token = jwtToken.sign({ _id: usuario._id }, 'shhhhh');
-            res.cookie("token", token, { expire: new Date() + 9999 });
-            const { _id, name, email, cpf } = usuario;
-            return res.json({ token, usuario: { _id, name, email, cpf } });
+    try {
+        const usuario = await usuario.findOne({ $or: [{ email: emailOrCpf }, { cpf: emailOrCpf }] });
+        if (!usuario) {
+            return res.status(400).json({
+                error: "usuario not found"
+            });
+        }
+        if (!usuario.authenticate(password)) {
+            return res.status(401).json({
+                error: "Email or Password does not exist"
+            });
+        }
+        // Setting JWT token as a cookie in the browser (cpf aqui)
+        const token = jwtToken.sign({ _id: usuario._id }, 'shhhhh');
+            res.cookie("token", token, { expire: new Date(Date.now() + 9999 * 1000) });
+        const { _id, name, email, cpf } = usuario;
+        return res.json({ token, usuario: { _id, name, email, cpf } });
+    } catch (error) {
+        return res.status(500).json({
+            error: "Internal Server Error"
         });
+    }
 };
 
 // SIGNOUT: Clearing user token
