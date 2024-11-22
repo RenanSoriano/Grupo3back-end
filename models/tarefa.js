@@ -7,11 +7,6 @@ const TarefaSchema = new mongoose.Schema({
     completed: {
         type: Boolean,
         default: false
-    },
-    user: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'usuario',
-        required: true
     }
 });
 
@@ -24,3 +19,4 @@ TarefaSchema.virtual('overdue').get(function() {
 });
 
 module.exports = mongoose.model('tarefa', TarefaSchema);
+
