@@ -36,17 +36,19 @@ mongoose.connect(connectionString, { useNewUrlParser: true, useUnifiedTopology: 
 
 //Rotas
 app.get('/tarefas', isSignedIn, async (req, res) => {
+    const userId = req.user._id; // Assuming user ID is stored in req.user
     try {
-        const tarefas = await Tarefa.find();
+        const tarefas = await Tarefa.find({ user: userId });
         res.json(tarefas);
     } catch (error) {
         res.status(500).json({ message: 'Error retrieving tarefas', error });
     }
 });
 
-app.post('/tarefas/new',isSignedIn, async (req, res) => {
+app.post('/tarefas/new', isSignedIn, async (req, res) => {
     const { name, description, dueDate } = req.body;
-    const newTarefa = new tarefa({ name, description, dueDate });
+    const userId = req.user._id; // Assuming user ID is stored in req.user
+    const newTarefa = new tarefa({ name, description, dueDate, user: userId });
     await newTarefa.save();
     res.json(newTarefa);
 });
