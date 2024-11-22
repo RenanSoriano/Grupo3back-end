@@ -15,7 +15,6 @@ const app = express();
 
 
 app.use(express.json()); 
-app.use(cors());
 // Cookie-parser for handling cookies
 app.use(cookieParser());
 // CORS for enabling Cross-Origin Resource Sharing
