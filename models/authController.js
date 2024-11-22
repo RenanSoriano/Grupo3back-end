@@ -22,40 +22,40 @@ exports.signup = async (req, res) => {
 
 // SIGNIN: Autenticar  usuario
 exports.signin = async (req, res) => {
-    // Validate usuario input using express-validator
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(422).json({
-            error: errors.array()[0].msg,
-        });
-    }
-
-    // Checking usuario credentials and generating JWT token for authentication
-    const { emailOrCpf, password } = req.body;
     try {
-        const usuario = await usuario.findOne({ $or: [{ email: emailOrCpf }, { cpf: emailOrCpf }] });
-        if (!usuario) {
+        const { emailOrCpf, password } = req.body;
+        
+        const user = await usuario.findOne({
+            $or: [
+                { email: emailOrCpf },
+                { cpf: emailOrCpf }
+            ]
+        });
+
+        if (!user) {
             return res.status(400).json({
-                error: "usuario not found"
+                error: "Usuario not found"
             });
         }
-        if (!usuario.authenticate(password)) {
+
+        if (!user.authenticate(password)) {
             return res.status(401).json({
-                error: "Email or Password does not exist"
+                error: "Email/CPF or Password does not match"
             });
         }
-        // Setting JWT token as a cookie in the browser (cpf aqui)
-        const token = jwtToken.sign({ _id: usuario._id }, 'shhhhh');
-            res.cookie("token", token, { expire: new Date(Date.now() + 9999 * 1000) });
-        const { _id, name, email, cpf } = usuario;
+
+        const token = jwtToken.sign({ _id: user._id }, 'shhhhh', { expiresIn: '1h' });
+        res.cookie("token", token, { expire: new Date(Date.now() + 3600000) });
+        
+        const { _id, name, email, cpf } = user;
         return res.json({ token, usuario: { _id, name, email, cpf } });
     } catch (error) {
+        console.error('Signin error:', error);
         return res.status(500).json({
             error: "Internal Server Error"
         });
     }
 };
-
 // SIGNOUT: Clearing user token
 exports.signout = (req, res) => {
     res.clearCookie("token");
