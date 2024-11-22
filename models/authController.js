@@ -13,7 +13,7 @@ exports.signup = async (req, res) => {
         });
     }
 
-    const { name, email, cpf, password } = req.body;
+    const { name, email, cpf, password, birthDate } = req.body;
     // Creating a new usuario instance and saving it to the database
     const newUser = new usuario({ name, email, cpf, password });
     await newUser.save();

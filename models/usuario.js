@@ -17,6 +17,10 @@ const usuarioSchema = new mongoose.Schema(
             required: true,
             unique: true
         },
+        birthdate: {
+            type: Date,
+            required: true
+        },
         encrypted_password: {
             type: String,
             required: true

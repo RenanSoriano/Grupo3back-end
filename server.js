@@ -94,13 +94,14 @@ app.put('/tarefas/:id/done', isSignedIn, async (req, res) => {
 
 // Update user information
 app.put('/usuario/update', isSignedIn, async (req, res) => {
-    const { email, cpf, password } = req.body;
+    const { email, cpf, password, birthDate } = req.body;
     const userId = req.user._id; // Assuming user ID is stored in req.user
 
     const updateData = {};
     if (email) updateData.email = email;
     if (cpf) updateData.cpf = cpf;
     if (password) updateData.password = password;
+    if (birthDate) updateData.birthDate = birthDate;
 
     try {
         const updatedUsuario = await usuario.findByIdAndUpdate(userId, updateData, { new: true });

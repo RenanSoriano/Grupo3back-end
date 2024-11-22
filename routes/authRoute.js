@@ -57,7 +57,7 @@ router.post(
 router.post(
     "/signup",
     [
-        // Validation for name, email, and password
+        // Validation for name, email, CPF, password, and birth date
         check("name", "Name must be 3+ chars long").isLength({ min: 3 }),
         check("email", "Email is required").isEmail(),
         check("cpf", "CPF is required").custom((cpf) => {
@@ -67,10 +67,11 @@ router.post(
             return true;
         }),
         check("password", "Password must contain 8+ chars").isLength({ min: 8 }),
-
+        check("birthDate", "Birth date is required and must be in YYYY-MM-DD format").isISO8601().toDate(),
     ],
-    signup // Call the signup function from the authController
+    (req, res) => {
+        // Handle the signup logic here
+    }
 );
-
 
 module.exports = router;
