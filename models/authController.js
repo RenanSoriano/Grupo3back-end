@@ -4,7 +4,7 @@ const jwtToken = require('jsonwebtoken');
 const { expressjwt: jwt } = require("express-jwt");
 
 // SIGNUP
-exports.signup = (req, res) => {
+exports.signup = async (req, res) => {
     // Validate usuario input using express-validator
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -13,24 +13,11 @@ exports.signup = (req, res) => {
         });
     }
 
-// Creating a new usuario instance and saving it to the database
-const usuario = new usuario(req.body);
-usuario.save()
-    .then(usuario => {
-        res.json({
-            id: usuario._id,
-            name: usuario.name,
-            email: usuario.email,
-            cpf: usuario.cpf,
-        });
-    })
-    .catch(err => {
-        let errorMessage = 'Something went wrong.';
-        if (err.code === 11000) {
-            errorMessage = 'usuario already exists, please signin'; 
-        }
-        return res.status(500).json({ error: errorMessage });
-    });
+    const { name, email, cpf, password } = req.body;
+    // Creating a new usuario instance and saving it to the database
+    const newUser = new usuario({ name, email, cpf, password });
+    await newUser.save();
+    res.json(newUser);
 };
 
 // SIGNIN: Autenticar  usuario
